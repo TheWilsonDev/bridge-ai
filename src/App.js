@@ -1,5 +1,5 @@
 import "./App.css";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ChakraProvider } from "@chakra-ui/react";
 import DashboardLayout from "./components/layouts/DashboardLayout";
 import HomePage from "./pages/HomePage";
@@ -9,7 +9,7 @@ import theme from "./theme";
 function App() {
   return (
     <ChakraProvider theme={theme}>
-      <BrowserRouter>
+      <HashRouter>
         <Routes>
           {/* Redirect root to dashboard */}
           <Route path="/" element={<Navigate to="/dashboard/home" replace />} />
@@ -22,7 +22,7 @@ function App() {
             <Route index element={<Navigate to="/dashboard/home" replace />} />
           </Route>
         </Routes>
-      </BrowserRouter>
+      </HashRouter>
     </ChakraProvider>
   );
 }
