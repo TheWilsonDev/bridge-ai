@@ -111,7 +111,7 @@ const ActiveChat = ({ chat, onSendMessage }) => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [chat.messages]);
+  }, [chat?.messages]);
 
   const handleSendMessage = () => {
     if (!message.trim()) {
@@ -133,6 +133,10 @@ const ActiveChat = ({ chat, onSendMessage }) => {
       handleSendMessage();
     }
   };
+
+  if (!chat || !chat.messages) {
+    return null;
+  }
 
   return (
     <Box height="100vh" position="relative" userSelect="none">
@@ -312,10 +316,18 @@ const ChatPage = () => {
   const navigate = useNavigate();
   const toast = useToast();
   const { activeChats, setActiveChats } = useOutletContext();
+  const [currentChat, setCurrentChat] = useState(null);
 
-  const chat = location.state;
+  useEffect(() => {
+    if (location.state) {
+      setCurrentChat({
+        ...location.state,
+        messages: location.state.messages || [],
+      });
+    }
+  }, [location.state]);
 
-  if (!chat) {
+  if (!currentChat) {
     return <Navigate to="/dashboard/home" replace />;
   }
 
@@ -329,22 +341,28 @@ const ChatPage = () => {
       };
 
       // Add user message to Firebase
-      await addMessage(chat.id, userMessage);
+      await addMessage(currentChat.id, userMessage);
 
       // Update local state
-      const updatedMessages = [...(chat.messages || []), userMessage];
+      const updatedMessages = [...currentChat.messages, userMessage];
+      const updatedChat = { ...currentChat, messages: updatedMessages };
+      setCurrentChat(updatedChat);
+
       navigate(location.pathname, {
-        state: { ...chat, messages: updatedMessages },
+        state: updatedChat,
         replace: true,
       });
 
       // Simulate agent response
-      const agentMessage = await addAgentResponse(chat.id, userMessage);
+      const agentMessage = await addAgentResponse(currentChat.id, userMessage);
 
       // Update local state with agent response
       const finalMessages = [...updatedMessages, agentMessage];
+      const finalChat = { ...currentChat, messages: finalMessages };
+      setCurrentChat(finalChat);
+
       navigate(location.pathname, {
-        state: { ...chat, messages: finalMessages },
+        state: finalChat,
         replace: true,
       });
     } catch (error) {
@@ -358,7 +376,7 @@ const ChatPage = () => {
     }
   };
 
-  return chat ? <ActiveChat chat={chat} onSendMessage={handleSendMessage} /> : null;
+  return <ActiveChat chat={currentChat} onSendMessage={handleSendMessage} />;
 };
 
 export default ChatPage;
