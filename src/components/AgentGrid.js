@@ -52,6 +52,46 @@ const categories = [
         name: "Data Engineer",
         description: "Build data pipelines and ETL processes with modern tools",
       },
+      {
+        name: "Senior Full-Stack Developer",
+        description: "Advanced web development with React, Node.js, and cloud services",
+      },
+      {
+        name: "Senior AI/ML Engineer",
+        description: "Advanced AI systems with PyTorch, TensorFlow, and deep learning",
+      },
+      {
+        name: "Senior DevOps Engineer",
+        description: "Advanced CI/CD, Docker, Kubernetes, and infrastructure automation",
+      },
+      {
+        name: "Senior Mobile Developer",
+        description: "Advanced cross-platform apps with React Native and Flutter",
+      },
+      {
+        name: "Senior Backend Architect",
+        description: "Advanced scalable systems, microservices, and API architectures",
+      },
+      {
+        name: "Senior Frontend Developer",
+        description: "Advanced responsive interfaces with modern frameworks",
+      },
+      {
+        name: "Senior Cloud Architect",
+        description: "Advanced AWS, Azure, or GCP cloud services and serverless",
+      },
+      {
+        name: "Senior Blockchain Engineer",
+        description: "Advanced smart contracts and decentralized applications",
+      },
+      {
+        name: "Senior Security Engineer",
+        description: "Advanced cybersecurity practices and penetration testing",
+      },
+      {
+        name: "Senior Data Engineer",
+        description: "Advanced data pipelines and ETL processes",
+      },
     ],
   },
   {
@@ -84,6 +124,30 @@ const categories = [
       {
         name: "Healthcare Data Specialist",
         description: "Process and analyze medical data and health records",
+      },
+      {
+        name: "Lead Business Intelligence Expert",
+        description: "Enterprise Power BI, Tableau, and data-driven strategies",
+      },
+      {
+        name: "Lead Data Science Specialist",
+        description: "Enterprise analytics with Python, R, and advanced modeling",
+      },
+      {
+        name: "Lead Big Data Engineer",
+        description: "Enterprise-scale data processing with Spark and Hadoop",
+      },
+      {
+        name: "Lead Marketing Analytics Pro",
+        description: "Enterprise marketing campaigns with advanced insights",
+      },
+      {
+        name: "Lead Financial Analyst",
+        description: "Enterprise market trends and financial forecasting",
+      },
+      {
+        name: "Lead Healthcare Data Specialist",
+        description: "Enterprise medical data and health records analysis",
       },
     ],
   },
@@ -123,6 +187,35 @@ const categories = [
         name: "API Documentation Specialist",
         description: "Write comprehensive API documentation and references",
       },
+      {
+        name: "Master Essay Writer Pro",
+        description: "Expert academic essays & papers with unmatched quality",
+        specialTag: "Premium",
+        verifiedTag: "Bridge Verified",
+        detailedDescription: "Our Master Essay Writer Pro offers the highest level of academic writing expertise. Using advanced techniques and comprehensive subject knowledge, it delivers exceptional papers that exceed expectations.",
+        features: ["Advanced writing style customization", "Comprehensive research methodology", "Expert citation handling", "All academic styles supported", "Premium quality guarantee", "Priority assistance"],
+        benefits: ["Premium quality assurance", "Advanced writing techniques", "Expert skill development", "Priority deadline handling"],
+      },
+      {
+        name: "Master Technical Writer",
+        description: "Expert technical documentation and system guides",
+      },
+      {
+        name: "Master Content Strategist",
+        description: "Expert content optimization for AI and search",
+      },
+      {
+        name: "Master UX Writer",
+        description: "Expert interface copy and user experience writing",
+      },
+      {
+        name: "Master Developer Advocate",
+        description: "Expert technical content and developer relations",
+      },
+      {
+        name: "Master API Documentation Expert",
+        description: "Expert API documentation and technical writing",
+      },
     ],
   },
   {
@@ -152,29 +245,98 @@ const categories = [
         name: "Open Source Contributor",
         description: "Learn to contribute to open source projects effectively",
       },
+      {
+        name: "Expert Agile Coach",
+        description: "Advanced Scrum, Kanban, and agile transformation",
+      },
+      {
+        name: "Expert Code Reviewer",
+        description: "Advanced code review and team collaboration practices",
+      },
+      {
+        name: "Expert System Designer",
+        description: "Advanced software architecture and design patterns",
+      },
+      {
+        name: "Expert Interview Coach",
+        description: "Advanced technical interview preparation",
+      },
+      {
+        name: "Expert OSS Contributor",
+        description: "Advanced open source contribution strategies",
+      },
     ],
   },
 ];
 
 const AgentCard = ({ name, description, icon, color, isSelected, onClick }) => {
+  // Function to create a very subtle tint
+  const getTintBg = (color, selected) => {
+    const tintOpacity = selected ? "18" : "08";
+    return `linear-gradient(rgba(26, 32, 44, 0.6), rgba(26, 32, 44, 0.6)), ${color}${tintOpacity}`;
+  };
+
+  // Function to create a slightly stronger tint for hover
+  const getHoverTintBg = (color, selected) => {
+    const tintOpacity = selected ? "22" : "11";
+    return `linear-gradient(rgba(26, 32, 44, 0.6), rgba(26, 32, 44, 0.6)), ${color}${tintOpacity}`;
+  };
+
   return (
     <Box
-      bg="#1A202C"
+      bg={getTintBg(color, isSelected)}
+      backdropFilter="blur(10px)"
       p={6}
       borderRadius="lg"
       cursor="pointer"
-      transition="all 0.2s"
-      borderColor={isSelected ? color : "transparent"}
-      borderWidth="2px"
+      transition="all 0.3s"
+      position="relative"
+      overflow="hidden"
       onClick={onClick}
+      boxShadow={`0 0 0 0 ${color}00`}
+      _before={{
+        content: '""',
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        borderRadius: "lg",
+        padding: "2px",
+        background: isSelected ? `linear-gradient(45deg, ${color}66, ${color}aa, ${color}66)` : "linear-gradient(45deg, rgba(255,255,255,0.15), rgba(255,255,255,0.3), rgba(255,255,255,0.15))",
+        WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+        WebkitMaskComposite: "xor",
+        maskComposite: "exclude",
+      }}
+      _after={{
+        content: '""',
+        position: "absolute",
+        top: 0,
+        left: "-50%",
+        width: "50%",
+        height: "100%",
+        background: "linear-gradient(to right, transparent, rgba(255,255,255,0.05), transparent)",
+        transform: "skewX(-25deg)",
+        transition: "0.5s",
+      }}
       _hover={{
-        transform: "translateY(-4px)",
-        boxShadow: "xl",
+        transform: "translateY(-5px)",
+        boxShadow: `0 0 30px -5px ${color}66`,
+        bg: getHoverTintBg(color, isSelected),
+        _after: {
+          left: "150%",
+        },
+        _before: {
+          background: isSelected ? `linear-gradient(45deg, ${color}88, ${color}cc, ${color}88)` : `linear-gradient(45deg, rgba(255,255,255,0.2), ${color}44, rgba(255,255,255,0.2))`,
+        },
+        "& svg": {
+          transform: "scale(1.1) rotate(5deg)",
+        },
       }}
     >
-      <VStack spacing={4} align="center">
-        <Icon as={icon} w={10} h={10} color={color} />
-        <Text color="white" fontSize="xl" fontWeight="bold">
+      <VStack spacing={4} align="center" position="relative">
+        <Icon as={icon} w={10} h={10} color={color} transition="transform 0.3s" filter={`drop-shadow(0 0 8px ${color}44)`} />
+        <Text color="white" fontSize="xl" fontWeight="bold" textShadow={`0 0 20px ${color}33`}>
           {name}
         </Text>
         <Text color="gray.300" textAlign="center">
@@ -302,36 +464,68 @@ const SubAgentCard = ({ name, description, color, specialTag, verifiedTag, categ
   return (
     <>
       <Box
-        bg="#1A202C"
+        bg="rgba(26, 32, 44, 0.4)"
+        backdropFilter="blur(8px)"
         p={4}
         borderRadius="md"
         transition="all 0.2s"
-        userSelect="none"
-        borderWidth="1px"
-        borderColor="transparent"
         cursor="pointer"
         onClick={onOpen}
+        position="relative"
+        overflow="hidden"
+        zIndex={1}
+        _before={{
+          content: '""',
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          borderRadius: "md",
+          padding: "1px",
+          background: "linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.2), rgba(255,255,255,0.1))",
+          WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+          WebkitMaskComposite: "xor",
+          maskComposite: "exclude",
+        }}
+        _after={{
+          content: '""',
+          position: "absolute",
+          top: 0,
+          left: "-100%",
+          width: "50%",
+          height: "100%",
+          background: "linear-gradient(to right, transparent, rgba(255,255,255,0.03), transparent)",
+          transform: "skewX(-25deg)",
+          transition: "0.5s",
+        }}
         _hover={{
-          transform: "translateX(4px)",
-          boxShadow: "md",
-          borderColor: color,
+          transform: "translateY(-2px)",
+          boxShadow: "0 8px 16px -6px rgba(0, 0, 0, 0.3)",
+          zIndex: 2,
+          _after: {
+            left: "150%",
+          },
+          _before: {
+            background: "linear-gradient(45deg, rgba(255,255,255,0.15), rgba(255,255,255,0.25), rgba(255,255,255,0.15))",
+          },
         }}
       >
-        <VStack align="start" spacing={2}>
+        <VStack align="start" spacing={2} position="relative">
           <Flex align="center" width="100%" justify="space-between" gap={2}>
             <Text color="white" fontSize="lg" fontWeight="semibold">
               {name}
             </Text>
             <Flex gap={2}>
               {verifiedTag && (
-                <Box bg="cyan.900" color="cyan.200" px={2} py={1} borderRadius="md" fontSize="xs" fontWeight="bold" border="1px solid" borderColor="cyan.700" textTransform="uppercase" letterSpacing="wider" display="flex" alignItems="center" gap={1}>
-                  <Box as="span" w={2} h={2} borderRadius="full" bg="cyan.400" />
+                <Box bg="rgba(6, 126, 129, 0.2)" color="cyan.200" px={2} py={1} borderRadius="md" fontSize="xs" fontWeight="bold" border="1px solid" borderColor="cyan.700" backdropFilter="blur(4px)">
+                  <Box as="span" w={2} h={2} borderRadius="full" bg="cyan.400" display="inline-block" mr={1} />
                   {verifiedTag}
                 </Box>
               )}
               {specialTag && (
-                <Box bg={`${color}22`} color={color} px={2} py={1} borderRadius="md" fontSize="xs" fontWeight="bold" border="1px solid" borderColor={`${color}44`} textTransform="uppercase" letterSpacing="wider" display="flex" alignItems="center" gap={1}>
-                  <Box as="span" w={2} h={2} borderRadius="full" bg={color} />
+                <Box bg={`${color}11`} color={color} px={2} py={1} borderRadius="md" fontSize="xs" fontWeight="bold" border="1px solid" borderColor={`${color}44`} backdropFilter="blur(4px)">
+                  <Box as="span" w={2} h={2} borderRadius="full" bg={color} display="inline-block" mr={1} />
                   {specialTag}
                 </Box>
               )}
@@ -455,74 +649,213 @@ const AgentGrid = () => {
         ))}
       </SimpleGrid>
 
-      <Box p={6} bg="#1A202C" borderRadius="lg" borderColor={selectedCategoryData?.color} borderWidth="1px" flex="1" display="flex" flexDirection="column" overflow="hidden">
-        <Flex justify="space-between" align="center" mb={4} position="relative">
-          <Text color="white" fontSize="xl" fontWeight="bold" minW="200px">
-            {selectedCategoryData?.name.replace(" Assistant", "")} Tutor Agents
-          </Text>
-          <Box position="absolute" left="50%" transform="translateX(-50%)" display="flex" alignItems="center" width="600px">
-            <InputGroup>
-              <InputLeftElement pointerEvents="none">
-                <Icon as={AiOutlineSearch} color="whiteAlpha.800" />
-              </InputLeftElement>
-              <Input
-                placeholder="Search agents..."
-                size="md"
-                bg="#141821"
-                border="1px solid"
-                borderColor="whiteAlpha.500"
-                _placeholder={{ color: "whiteAlpha.700" }}
-                _hover={{
-                  borderColor: "whiteAlpha.700",
-                  bg: "#161a25",
-                }}
-                _focus={{
-                  borderColor: selectedCategoryData?.color,
-                  boxShadow: `0 0 0 1px ${selectedCategoryData?.color}`,
-                  bg: "#161a25",
-                }}
-                color="white"
-                pr="48px"
-                value={searchQuery}
-                onChange={handleSearchChange}
-                onKeyPress={handleKeyPress}
-              />
-              <InputRightElement width="40px" right="4px">
-                <IconButton
-                  icon={<FaArrowUp />}
-                  size="sm"
-                  variant="ghost"
-                  color="whiteAlpha.800"
-                  bg="#141821"
-                  borderLeft="1px"
-                  borderColor="whiteAlpha.500"
-                  borderRadius="0"
-                  height="34px"
-                  width="40px"
-                  onClick={handleSearch}
+      <Box
+        p={6}
+        bg={selectedCategoryData?.color === "#4299E1" ? "rgba(26, 32, 44, 0.4)" : `linear-gradient(rgba(26, 32, 44, 0.4), rgba(26, 32, 44, 0.4)), ${selectedCategoryData?.color}05`}
+        backdropFilter="blur(12px)"
+        borderRadius="2xl"
+        flex="1"
+        display="flex"
+        flexDirection="column"
+        position="relative"
+        maxH="calc(100vh - 280px)"
+        _before={{
+          content: '""',
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          borderRadius: "2xl",
+          padding: "2px",
+          background: `linear-gradient(45deg, ${selectedCategoryData?.color}44, ${selectedCategoryData?.color}88, ${selectedCategoryData?.color}44)`,
+          WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+          WebkitMaskComposite: "xor",
+          maskComposite: "exclude",
+        }}
+      >
+        <Box position="absolute" top={0} left={0} right={0} zIndex={3}>
+          <Box
+            position="absolute"
+            top={0}
+            left={0}
+            right={0}
+            height="100%"
+            borderTopRadius="2xl"
+            bg={`linear-gradient(90deg, 
+              rgba(26, 32, 44, 0.5),
+              ${selectedCategoryData?.color}15 0%,
+              ${selectedCategoryData?.color}15 10%,
+              rgba(26, 32, 44, 0.6) 15%, 
+              rgba(26, 32, 44, 0.6) 25%, 
+              ${selectedCategoryData?.color}20 50%,
+              rgba(26, 32, 44, 0.6) 75%,
+              rgba(26, 32, 44, 0.5)
+            )`}
+            _before={{
+              content: '""',
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: "2px",
+              borderTopRadius: "2xl",
+              background: `linear-gradient(90deg, 
+                transparent 0%, 
+                ${selectedCategoryData?.color}44 15%, 
+                ${selectedCategoryData?.color}88 50%, 
+                ${selectedCategoryData?.color}44 85%, 
+                transparent 100%
+              )`,
+            }}
+            _after={{
+              content: '""',
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: "1px",
+              background: `linear-gradient(90deg, 
+                transparent 0%, 
+                ${selectedCategoryData?.color}22 20%, 
+                ${selectedCategoryData?.color}44 50%, 
+                ${selectedCategoryData?.color}22 80%, 
+                transparent 100%
+              )`,
+            }}
+          />
+          <Flex
+            justify="space-between"
+            align="center"
+            position="relative"
+            px={6}
+            py={4}
+            _before={{
+              content: '""',
+              position: "absolute",
+              left: "2px",
+              top: "10%",
+              bottom: "10%",
+              width: "1px",
+              background: `linear-gradient(180deg, 
+                transparent 0%, 
+                ${selectedCategoryData?.color}44 30%, 
+                ${selectedCategoryData?.color}44 70%, 
+                transparent 100%
+              )`,
+            }}
+            _after={{
+              content: '""',
+              position: "absolute",
+              right: "2px",
+              top: "10%",
+              bottom: "10%",
+              width: "1px",
+              background: `linear-gradient(180deg, 
+                transparent 0%, 
+                ${selectedCategoryData?.color}44 30%, 
+                ${selectedCategoryData?.color}44 70%, 
+                transparent 100%
+              )`,
+            }}
+          >
+            <Text color="white" fontSize="xl" fontWeight="bold" minW="200px" zIndex={1} textShadow={`0 0 20px ${selectedCategoryData?.color}33`}>
+              {selectedCategoryData?.name.replace(" Assistant", "")} Tutor Agents
+            </Text>
+            <Box position="absolute" left="50%" transform="translateX(-50%)" display="flex" alignItems="center" width="600px" zIndex={1}>
+              <InputGroup>
+                <InputLeftElement pointerEvents="none">
+                  <Icon as={AiOutlineSearch} color="whiteAlpha.800" />
+                </InputLeftElement>
+                <Input
+                  placeholder="Search agents..."
+                  size="md"
+                  bg="rgba(20, 24, 33, 0.6)"
+                  backdropFilter="blur(8px)"
+                  border="1px solid"
+                  borderColor="whiteAlpha.300"
+                  _placeholder={{ color: "whiteAlpha.500" }}
                   _hover={{
-                    bg: "#161a25",
-                    color: selectedCategoryData?.color,
+                    borderColor: "whiteAlpha.400",
+                    bg: "rgba(22, 26, 37, 0.6)",
                   }}
-                  _active={{
-                    bg: "#161a25",
-                    color: selectedCategoryData?.color,
+                  _focus={{
+                    borderColor: `${selectedCategoryData?.color}66`,
+                    boxShadow: "none",
+                    bg: "rgba(22, 26, 37, 0.8)",
+                    _before: {
+                      opacity: 1,
+                    },
                   }}
+                  color="white"
+                  pr="48px"
+                  position="relative"
+                  transition="all 0.2s"
+                  _before={{
+                    content: '""',
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    borderRadius: "md",
+                    padding: "1px",
+                    background: `linear-gradient(45deg, ${selectedCategoryData?.color}44, ${selectedCategoryData?.color}88, ${selectedCategoryData?.color}44)`,
+                    WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                    WebkitMaskComposite: "xor",
+                    maskComposite: "exclude",
+                    opacity: 0,
+                    transition: "opacity 0.2s",
+                  }}
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  onKeyPress={handleKeyPress}
                 />
-              </InputRightElement>
-            </InputGroup>
-          </Box>
-          <Box minW="200px" />
-        </Flex>
+                <InputRightElement width="40px" right="4px">
+                  <IconButton
+                    icon={<FaArrowUp />}
+                    size="sm"
+                    variant="ghost"
+                    color="whiteAlpha.600"
+                    bg="transparent"
+                    borderLeft="1px"
+                    borderColor="whiteAlpha.200"
+                    borderRadius="0"
+                    height="34px"
+                    width="40px"
+                    transition="all 0.2s"
+                    _hover={{
+                      bg: "rgba(22, 26, 37, 0.8)",
+                      color: selectedCategoryData?.color,
+                      borderColor: "whiteAlpha.300",
+                    }}
+                    _active={{
+                      bg: "rgba(22, 26, 37, 0.9)",
+                      color: selectedCategoryData?.color,
+                      transform: "translateY(1px)",
+                    }}
+                    onClick={handleSearch}
+                  />
+                </InputRightElement>
+              </InputGroup>
+            </Box>
+            <Box minW="200px" />
+          </Flex>
+        </Box>
+
         <Box
-          flex="1"
+          position="absolute"
+          top="65px"
+          left={0}
+          right={0}
+          bottom={0}
           overflowY="auto"
-          pr={2}
+          overflowX="hidden"
           sx={{
             "&::-webkit-scrollbar": {
               width: "8px",
               borderRadius: "8px",
-              backgroundColor: "#2D3748",
+              backgroundColor: "rgba(45, 55, 72, 0.3)",
             },
             "&::-webkit-scrollbar-thumb": {
               backgroundColor: selectedCategoryData?.color,
@@ -530,7 +863,7 @@ const AgentGrid = () => {
             },
           }}
         >
-          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} px={1}>
+          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} position="relative" px={8} pb={6} pt={4}>
             {filteredAgents.map((agent, index) => (
               <SubAgentCard key={index} {...agent} color={selectedCategoryData?.color} categoryName={selectedCategoryData?.name} />
             ))}

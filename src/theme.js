@@ -8,16 +8,16 @@ const theme = extendTheme({
   styles: {
     global: {
       body: {
-        bg: "#0f1117",
+        bg: "#000000",
         color: "white",
       },
     },
   },
   colors: {
     gray: {
-      900: "#0f1117", // Darker background
-      800: "#1a1d27", // Sidebar background
-      700: "#2d303a", // Active button background
+      900: "#000000", // Darker background
+      800: "#2c2c2c", // Sidebar background
+      700: "#3a3a3a", // Active button background
     },
   },
   components: {
