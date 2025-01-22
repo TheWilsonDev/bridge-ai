@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Box, Flex, Text, Input, IconButton, VStack, HStack, Divider, useToast, SimpleGrid, Icon } from "@chakra-ui/react";
+import { Box, Flex, Text, Input, IconButton, VStack, HStack, Divider, useToast, SimpleGrid, Icon, Spinner } from "@chakra-ui/react";
 import { FaArrowUp, FaRobot } from "react-icons/fa";
 import { useLocation, Navigate, useNavigate, useOutletContext } from "react-router-dom";
 import { addMessage, addAgentResponse } from "../firebase/chatOperations";
@@ -317,22 +317,46 @@ const ChatPage = () => {
   const toast = useToast();
   const { activeChats, setActiveChats } = useOutletContext();
   const [currentChat, setCurrentChat] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (location.state) {
+    console.log("ChatPage: Location changed", location);
+    setIsLoading(true);
+
+    // Try to get chat from location state first, then fallback to sessionStorage
+    const chatState = location.state || JSON.parse(sessionStorage.getItem("currentChat"));
+    console.log("ChatPage: Retrieved chatState", chatState);
+
+    if (chatState) {
+      console.log("ChatPage: Setting current chat");
       setCurrentChat({
-        ...location.state,
-        messages: location.state.messages || [],
+        ...chatState,
+        messages: chatState.messages || [],
       });
+    } else {
+      console.log("ChatPage: No chat state found");
     }
+    setIsLoading(false);
   }, [location.state]);
 
-  if (!currentChat) {
+  console.log("ChatPage: Current chat state:", currentChat, "isLoading:", isLoading);
+
+  if (!currentChat && !isLoading) {
+    console.log("ChatPage: No current chat and not loading, redirecting to home");
     return <Navigate to="/dashboard/home" replace />;
+  }
+
+  if (isLoading || !currentChat) {
+    return (
+      <Box p={8}>
+        <Spinner size="xl" />
+      </Box>
+    );
   }
 
   const handleSendMessage = async (messageText) => {
     try {
+      console.log("ChatPage: Sending message", messageText);
       // Create user message
       const userMessage = {
         role: "user",
@@ -342,31 +366,41 @@ const ChatPage = () => {
 
       // Add user message to Firebase
       await addMessage(currentChat.id, userMessage);
+      console.log("ChatPage: Message added to Firebase");
 
       // Update local state
       const updatedMessages = [...currentChat.messages, userMessage];
       const updatedChat = { ...currentChat, messages: updatedMessages };
       setCurrentChat(updatedChat);
+      console.log("ChatPage: Local state updated with user message");
+
+      // Update sessionStorage
+      sessionStorage.setItem("currentChat", JSON.stringify(updatedChat));
+      console.log("ChatPage: Session storage updated");
 
       navigate(location.pathname, {
         state: updatedChat,
-        replace: true,
       });
 
       // Simulate agent response
       const agentMessage = await addAgentResponse(currentChat.id, userMessage);
+      console.log("ChatPage: Agent response received", agentMessage);
 
       // Update local state with agent response
       const finalMessages = [...updatedMessages, agentMessage];
       const finalChat = { ...currentChat, messages: finalMessages };
       setCurrentChat(finalChat);
+      console.log("ChatPage: Local state updated with agent response");
+
+      // Update sessionStorage
+      sessionStorage.setItem("currentChat", JSON.stringify(finalChat));
+      console.log("ChatPage: Session storage updated with agent response");
 
       navigate(location.pathname, {
         state: finalChat,
-        replace: true,
       });
     } catch (error) {
-      console.error("Error sending message:", error);
+      console.error("ChatPage: Error sending message:", error);
       toast({
         title: "Error sending message",
         status: "error",

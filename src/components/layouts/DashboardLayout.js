@@ -128,23 +128,89 @@ const DashboardLayout = () => {
   const isActive = (path) => location.pathname === path;
 
   const handleChatClick = (chat) => {
-    if (selectedChat?.id === chat.id) return;
+    console.log("Chat clicked:", chat);
+    if (selectedChat?.id === chat.id) {
+      console.log("Same chat already selected, returning");
+      return;
+    }
 
-    setSelectedChat(chat);
+    const chatState = {
+      existingChat: true,
+      id: chat.id,
+      agent: chat.agent,
+      category: chat.category,
+      color: chat.color,
+      title: chat.title,
+      messages: chat.messages || [],
+      lastActive: chat.lastActive,
+    };
+
+    console.log("Created chatState:", chatState);
+
+    // Store in session storage first
+    sessionStorage.setItem("currentChat", JSON.stringify(chatState));
+    console.log("Chat stored in sessionStorage");
+
+    // Update selected chat
+    setSelectedChat(chatState);
+    console.log("Selected chat updated");
+
+    // Navigate last, and ensure we're using push instead of replace
+    console.log("Navigating to chat page...");
     navigate("/dashboard/chat", {
-      state: {
-        existingChat: true,
-        id: chat.id,
-        agent: chat.agent,
-        category: chat.category,
-        color: chat.color,
-        title: chat.title,
-        messages: chat.messages,
-        lastActive: chat.lastActive,
-      },
-      replace: true,
+      state: chatState,
     });
   };
+
+  // Update selected chat when location changes
+  useEffect(() => {
+    console.log("Location changed:", location);
+    const currentPath = location.pathname;
+    console.log("Current path:", currentPath);
+
+    // If we're on the chat page
+    if (currentPath === "/dashboard/chat") {
+      // Try to get chat from location state or session storage
+      const chatState = location.state || JSON.parse(sessionStorage.getItem("currentChat"));
+      console.log("Retrieved chatState:", chatState);
+      if (chatState?.id) {
+        console.log("Setting selected chat from location change");
+        setSelectedChat(chatState);
+      } else {
+        console.log("No valid chatState found");
+        // If no chat state is found, redirect to home
+        navigate("/dashboard/home", { replace: true });
+      }
+    }
+  }, [location]);
+
+  // Keep selected chat in sync with active chats
+  useEffect(() => {
+    console.log("Active chats updated:", activeChats);
+    if (selectedChat?.id) {
+      console.log("Looking for chat with id:", selectedChat.id);
+      const chat = activeChats.find((c) => c.id === selectedChat.id);
+      if (chat) {
+        console.log("Found matching chat, updating selected chat");
+        setSelectedChat({
+          ...selectedChat,
+          messages: chat.messages || [],
+          title: chat.title,
+          lastActive: chat.lastActive,
+        });
+      } else {
+        console.log("No matching chat found in activeChats");
+      }
+    }
+  }, [activeChats]);
+
+  // Add debugging for render
+  console.log("Current state:", {
+    pathname: location.pathname,
+    selectedChat: selectedChat?.id,
+    activeChatsCount: activeChats.length,
+    locationState: location.state,
+  });
 
   // Handle new chat creation from agent selection
   useEffect(() => {
@@ -162,25 +228,28 @@ const DashboardLayout = () => {
 
           // Create the chat in Firebase
           const createdChat = await addChat(newChat);
-          console.log("Created chat:", createdChat); // Debug log
+          console.log("Created chat:", createdChat);
 
           // Update local state with the new chat
           setActiveChats((prev) => [createdChat, ...prev]);
           setSelectedChat(createdChat);
 
-          // Navigate to the chat page
+          const chatState = {
+            existingChat: true,
+            id: createdChat.id,
+            agent: createdChat.agent,
+            category: createdChat.category,
+            color: createdChat.color,
+            title: createdChat.title,
+            messages: createdChat.messages || [],
+            lastActive: createdChat.lastActive,
+          };
+
+          // Store chat state in sessionStorage
+          sessionStorage.setItem("currentChat", JSON.stringify(chatState));
+
           navigate("/dashboard/chat", {
-            state: {
-              existingChat: true,
-              id: createdChat.id,
-              agent: createdChat.agent,
-              category: createdChat.category,
-              color: createdChat.color,
-              title: createdChat.title,
-              messages: createdChat.messages,
-              lastActive: createdChat.lastActive,
-            },
-            replace: true,
+            state: chatState,
           });
         } catch (error) {
           console.error("Error creating new chat:", error);
