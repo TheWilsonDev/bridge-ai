@@ -1,95 +1,253 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Box, Flex, VStack, Button, Text, HStack, Avatar, Icon, Input, InputGroup, InputLeftElement, Divider, IconButton, useToast } from "@chakra-ui/react";
+import { Box, Flex, VStack, Button, Text, HStack, Avatar, Icon, Input, InputGroup, InputLeftElement, Divider, IconButton, useToast, Menu, MenuButton, MenuList, MenuItem, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Portal } from "@chakra-ui/react";
 import { useLocation, Outlet, useNavigate } from "react-router-dom";
 import { AiOutlineHome, AiOutlineMessage, AiOutlineSearch, AiOutlineEdit, AiOutlinePlus } from "react-icons/ai";
-import { FaHome, FaComments, FaCog, FaRobot, FaCheck, FaTimes } from "react-icons/fa";
+import { FaHome, FaComments, FaCog, FaRobot, FaCheck, FaTimes, FaEllipsisV, FaEdit, FaTrash, FaBolt, FaArrowRight } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { getChats, updateChat, addChat } from "../../firebase/chatOperations";
+import { getChats, updateChat, addChat, deleteChat } from "../../firebase/chatOperations";
 
-const ChatItem = ({ chat, isActive, onClick }) => {
-  const [isEditing, setIsEditing] = useState(false);
+const ChatItem = ({ chat, isActive, onClick, onChatUpdate }) => {
   const [editedTitle, setEditedTitle] = useState(chat.title);
-  const inputRef = useRef(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const toast = useToast();
 
-  const handleTitleClick = (e) => {
+  const handleEditClick = (e) => {
     e.stopPropagation();
     setIsEditing(true);
   };
 
-  const handleBlur = () => {
-    if (editedTitle.trim()) {
-      chat.title = editedTitle.trim();
-    } else {
-      setEditedTitle(chat.title);
-    }
-    setIsEditing(false);
+  const handleDeleteClick = (e) => {
+    e.stopPropagation();
+    onOpen();
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      e.target.blur();
+  const handleDelete = async () => {
+    try {
+      await deleteChat(chat.id);
+      onChatUpdate(chat, true);
+      onClose();
+      toast({
+        title: "Chat deleted",
+        description: "The chat has been permanently deleted.",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+        position: "top-right",
+      });
+    } catch (error) {
+      toast({
+        title: "Error deleting chat",
+        description: "Failed to delete the chat. Please try again.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+        position: "top-right",
+      });
+    }
+  };
+
+  const handleTitleSave = async () => {
+    if (editedTitle.trim() && editedTitle !== chat.title) {
+      try {
+        console.log("Updating chat title in Firebase:", {
+          chatId: chat.id,
+          newTitle: editedTitle.trim(),
+          oldTitle: chat.title,
+        });
+
+        // Update in Firebase
+        await updateChat(chat.id, {
+          title: editedTitle.trim(),
+          lastActive: Date.now(),
+        });
+
+        console.log("Firebase update successful");
+
+        // Update local state
+        const updatedChat = {
+          ...chat,
+          title: editedTitle.trim(),
+          lastActive: Date.now(),
+        };
+
+        console.log("Updating local state with:", updatedChat);
+        onChatUpdate(updatedChat);
+        setIsEditing(false);
+
+        toast({
+          title: "Chat name updated",
+          status: "success",
+          duration: 2000,
+          isClosable: true,
+          position: "top-right",
+        });
+      } catch (error) {
+        console.error("Error updating chat title:", error);
+        toast({
+          title: "Error updating chat name",
+          description: error.message,
+          status: "error",
+          duration: 2000,
+          isClosable: true,
+          position: "top-right",
+        });
+      }
+    } else {
+      setEditedTitle(chat.title);
+      setIsEditing(false);
     }
   };
 
   return (
-    <Box p={3} cursor="pointer" borderRadius="md" position="relative" onClick={isEditing ? undefined : onClick} transition="all 0.2s" width="100%" mr={2}>
-      {/* Background layer */}
-      <Box
-        position="absolute"
-        top={0}
-        left={0}
-        right={0}
-        bottom={0}
-        bg={isActive ? "rgba(255, 255, 255, 0.03)" : "transparent"}
-        backdropFilter={isActive ? "blur(8px)" : "none"}
-        borderRadius="md"
-        transition="all 0.2s"
-        _before={{
-          content: '""',
-          position: "absolute",
-          top: "-1px",
-          left: "-1px",
-          right: "-1px",
-          bottom: "-1px",
-          borderRadius: "md",
-          padding: "1px",
-          background: isActive
-            ? `linear-gradient(45deg, 
-                ${chat.color}44, 
-                ${chat.color}22, 
-                ${chat.color}44, 
-                ${chat.color}22, 
-                ${chat.color}44)`
-            : "transparent",
-          WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-          WebkitMaskComposite: "xor",
-          maskComposite: "exclude",
-          opacity: isActive ? 1 : 0,
-          transition: "opacity 0.3s",
-          animation: isActive ? "borderFlow 3s linear infinite" : "none",
-          backgroundSize: "300% 300%",
-        }}
-      />
+    <>
+      <Box p={3} cursor="pointer" borderRadius="md" position="relative" onClick={isEditing ? undefined : onClick} transition="all 0.2s" width="100%" mr={2}>
+        {/* Background layer */}
+        <Box
+          position="absolute"
+          top={0}
+          left={0}
+          right={0}
+          bottom={0}
+          bg={isActive ? "rgba(255, 255, 255, 0.03)" : "transparent"}
+          backdropFilter={isActive ? "blur(8px)" : "none"}
+          borderRadius="md"
+          transition="all 0.2s"
+          _before={{
+            content: '""',
+            position: "absolute",
+            top: "-1px",
+            left: "-1px",
+            right: "-1px",
+            bottom: "-1px",
+            borderRadius: "md",
+            padding: "1px",
+            background: isActive
+              ? `linear-gradient(45deg, 
+                  ${chat.color}44, 
+                  ${chat.color}22, 
+                  ${chat.color}44, 
+                  ${chat.color}22, 
+                  ${chat.color}44)`
+              : "transparent",
+            WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+            WebkitMaskComposite: "xor",
+            maskComposite: "exclude",
+            opacity: isActive ? 1 : 0,
+            transition: "opacity 0.3s",
+            animation: isActive ? "borderFlow 3s linear infinite" : "none",
+            backgroundSize: "300% 300%",
+          }}
+        />
 
-      {/* Content layer */}
-      <VStack align="start" spacing={1} position="relative" zIndex={1}>
-        <Flex justify="space-between" width="100%" align="center">
+        {/* Content layer */}
+        <VStack align="start" spacing={1} position="relative" zIndex={1}>
           <Flex justify="space-between" width="100%" align="center">
-            {isEditing ? (
-              <Input ref={inputRef} value={editedTitle} onChange={(e) => setEditedTitle(e.target.value)} onKeyDown={handleKeyPress} onBlur={handleBlur} size="sm" variant="unstyled" color="white" width="auto" minW="100px" onClick={(e) => e.stopPropagation()} autoFocus position="relative" zIndex={2} />
-            ) : (
-              <Text color="white" fontSize="sm" fontWeight="medium" noOfLines={1} onClick={handleTitleClick} cursor="text" position="relative" zIndex={2}>
-                {chat.title}
-              </Text>
-            )}
-            <Box w={2} h={2} borderRadius="full" bg={chat.color} flexShrink={0} ml={2} boxShadow={`0 0 10px ${chat.color}66`} position="relative" zIndex={2} />
+            <Flex justify="space-between" width="100%" align="center">
+              {isEditing ? (
+                <HStack spacing={2} flex={1}>
+                  <Input
+                    value={editedTitle}
+                    onChange={(e) => setEditedTitle(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleTitleSave();
+                      } else if (e.key === "Escape") {
+                        setEditedTitle(chat.title);
+                        setIsEditing(false);
+                      }
+                    }}
+                    size="sm"
+                    variant="unstyled"
+                    color="white"
+                    width="auto"
+                    minW="100px"
+                    onClick={(e) => e.stopPropagation()}
+                    autoFocus
+                  />
+                  <IconButton
+                    icon={<FaCheck />}
+                    size="xs"
+                    variant="ghost"
+                    colorScheme="green"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleTitleSave();
+                    }}
+                  />
+                  <IconButton
+                    icon={<FaTimes />}
+                    size="xs"
+                    variant="ghost"
+                    colorScheme="red"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditedTitle(chat.title);
+                      setIsEditing(false);
+                    }}
+                  />
+                </HStack>
+              ) : (
+                <Text color="white" fontSize="sm" fontWeight="medium" noOfLines={1} position="relative" zIndex={2}>
+                  {chat.title}
+                </Text>
+              )}
+              <HStack spacing={2}>
+                <Box w={2} h={2} borderRadius="full" bg={chat.color} flexShrink={0} boxShadow={`0 0 10px ${chat.color}66`} position="relative" zIndex={2} />
+                <Menu isLazy placement="right-start">
+                  <MenuButton as={IconButton} icon={<FaEllipsisV />} variant="ghost" size="xs" color="whiteAlpha.700" _hover={{ color: "white", bg: "whiteAlpha.100" }} onClick={(e) => e.stopPropagation()} />
+                  <Portal>
+                    <MenuList
+                      bg="#0f1117"
+                      borderColor="whiteAlpha.200"
+                      boxShadow="dark-lg"
+                      py={2}
+                      minW="150px"
+                      zIndex={2000}
+                      sx={{
+                        "& > *": {
+                          position: "relative",
+                          zIndex: 2001,
+                        },
+                      }}
+                    >
+                      <MenuItem icon={<FaEdit />} onClick={(e) => handleEditClick(e)} bg="#0f1117" _hover={{ bg: "whiteAlpha.100" }} color="white" fontSize="sm">
+                        Edit Name
+                      </MenuItem>
+                      <MenuItem icon={<FaTrash />} onClick={(e) => handleDeleteClick(e)} bg="#0f1117" _hover={{ bg: "whiteAlpha.100" }} color="red.300" fontSize="sm">
+                        Delete Chat
+                      </MenuItem>
+                    </MenuList>
+                  </Portal>
+                </Menu>
+              </HStack>
+            </Flex>
           </Flex>
-        </Flex>
-        <Text color="whiteAlpha.600" fontSize="xs" noOfLines={1} position="relative" zIndex={2}>
-          {chat.agent.name}
-        </Text>
-      </VStack>
-    </Box>
+          <Text color="whiteAlpha.600" fontSize="xs" noOfLines={1} position="relative" zIndex={2}>
+            {chat.agent.name}
+          </Text>
+        </VStack>
+      </Box>
+
+      {/* Delete Confirmation Modal */}
+      <Modal isOpen={isOpen} onClose={onClose} isCentered>
+        <ModalOverlay backdropFilter="blur(10px)" />
+        <ModalContent bg="#1a1d27" border="1px solid" borderColor="whiteAlpha.200">
+          <ModalHeader color="white">Delete Chat</ModalHeader>
+          <ModalCloseButton color="white" />
+          <ModalBody color="whiteAlpha.800">Are you sure you want to delete this chat? This action cannot be undone and all messages will be permanently lost.</ModalBody>
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={onClose} color="white">
+              Cancel
+            </Button>
+            <Button colorScheme="red" onClick={handleDelete}>
+              Delete
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
   );
 };
 
@@ -221,7 +379,7 @@ const DashboardLayout = () => {
             agent: location.state.agent,
             category: location.state.category,
             color: location.state.color,
-            title: `New Chat ${activeChats.length + 1}`,
+            title: "New Chat", // Explicitly set default title
             lastActive: Date.now(),
             messages: [],
           };
@@ -319,6 +477,23 @@ const DashboardLayout = () => {
       updateChatData();
     }
   }, [location.state?.messages, location.state?.title]);
+
+  const handleChatUpdate = (updatedChat, isDelete = false) => {
+    if (isDelete) {
+      // For deletion, filter out the chat that was deleted using updatedChat.id
+      setActiveChats((prev) => prev.filter((chat) => chat.id !== updatedChat.id));
+      if (selectedChat?.id === updatedChat.id) {
+        setSelectedChat(null);
+        navigate("/dashboard/home");
+      }
+    } else if (updatedChat) {
+      // For updates, we update the matching chat
+      setActiveChats((prev) => prev.map((chat) => (chat.id === updatedChat.id ? updatedChat : chat)));
+      if (selectedChat?.id === updatedChat.id) {
+        setSelectedChat(updatedChat);
+      }
+    }
+  };
 
   return (
     <Flex h="100vh" bg="#0f1117" userSelect="none" overflow="hidden">
@@ -438,31 +613,125 @@ const DashboardLayout = () => {
             <VStack spacing={1} align="stretch" width="100%" pb={2}>
               {activeChats.map((chat) => (
                 <Box key={chat.id} width="100%">
-                  <ChatItem chat={chat} isActive={location.pathname === "/dashboard/chat" && selectedChat?.id === chat.id} onClick={() => handleChatClick(chat)} />
+                  <ChatItem chat={chat} isActive={location.pathname === "/dashboard/chat" && selectedChat?.id === chat.id} onClick={() => handleChatClick(chat)} onChatUpdate={handleChatUpdate} />
                 </Box>
               ))}
             </VStack>
           </Box>
         </Box>
 
-        {/* Profile Section */}
+        {/* Credit Display - Add before Profile Section */}
         <Box
-          p={4}
-          borderTop="1px"
-          borderColor="whiteAlpha.100"
-          bg="rgba(26, 32, 44, 0.4)"
-          backdropFilter="blur(10px)"
           position="relative"
+          bg="rgba(0, 0, 0, 0.2)"
+          p={3}
+          mx={4}
+          mb={4}
+          borderRadius="lg"
+          border="1px solid"
+          borderColor="whiteAlpha.200"
           _before={{
             content: '""',
             position: "absolute",
-            top: 0,
-            left: "25%",
-            right: "25%",
-            height: "1px",
-            background: "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent)",
+            inset: "-1px",
+            padding: "1px",
+            borderRadius: "lg",
+            background: "linear-gradient(45deg, #4299E1, #2B6CB0)",
+            WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+            WebkitMaskComposite: "xor",
+            maskComposite: "exclude",
+            opacity: 0.5,
           }}
         >
+          <VStack spacing={1.5} align="stretch">
+            <HStack justify="space-between">
+              <Text color="whiteAlpha.900" fontSize="sm" fontWeight="semibold">
+                Credits Used This Month
+              </Text>
+              <Icon as={FaBolt} color="blue.400" w={4} h={4} filter="drop-shadow(0 0 8px rgba(66, 153, 225, 0.5))" />
+            </HStack>
+            <HStack justify="space-between" align="center">
+              <VStack align="start" spacing={0}>
+                <Text fontSize="2xl" fontWeight="bold" bgGradient="linear(to-r, blue.200, blue.500)" bgClip="text" textShadow="0 0 20px rgba(66, 153, 225, 0.3)">
+                  2,500
+                </Text>
+                <Button
+                  variant="link"
+                  size="xs"
+                  color="blue.400"
+                  fontWeight="medium"
+                  _hover={{
+                    color: "blue.300",
+                    textDecoration: "none",
+                    transform: "translateX(2px)",
+                  }}
+                  _active={{
+                    color: "blue.500",
+                    transform: "translateX(0px)",
+                  }}
+                  rightIcon={<Icon as={FaArrowRight} w={3} h={3} />}
+                  transition="all 0.2s"
+                  onClick={() => navigate("/dashboard/settings/usage")}
+                >
+                  View Usage Details
+                </Button>
+              </VStack>
+            </HStack>
+            <HStack spacing={3} align="center" pt={1}>
+              <Divider borderColor="whiteAlpha.400" />
+              <Text fontSize="xs" color="whiteAlpha.400" whiteSpace="nowrap">
+                or
+              </Text>
+              <Divider borderColor="whiteAlpha.400" />
+            </HStack>
+            <VStack spacing={2} align="center" pt={1}>
+              <Text color="whiteAlpha.600" fontSize="xs" fontWeight="medium">
+                Developer Plan
+              </Text>
+              <Button
+                width="100%"
+                size="sm"
+                bg="whiteAlpha.100"
+                color="white"
+                fontSize="xs"
+                fontWeight="medium"
+                height="32px"
+                position="relative"
+                onClick={() => navigate("/dashboard/settings/usage")}
+                _hover={{
+                  bg: "whiteAlpha.200",
+                  transform: "translateY(-1px)",
+                  _before: {
+                    opacity: 1,
+                  },
+                }}
+                _active={{
+                  transform: "translateY(0)",
+                }}
+                transition="all 0.2s"
+                _before={{
+                  content: '""',
+                  position: "absolute",
+                  inset: "-1px",
+                  padding: "1px",
+                  borderRadius: "md",
+                  background: "linear-gradient(45deg, #4299E1, #2B6CB0)",
+                  WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                  WebkitMaskComposite: "xor",
+                  maskComposite: "exclude",
+                  opacity: 0,
+                  transition: "opacity 0.2s",
+                }}
+                rightIcon={<Icon as={FaArrowRight} w={3} h={3} />}
+              >
+                Use Your API Key
+              </Button>
+            </VStack>
+          </VStack>
+        </Box>
+
+        {/* Profile Section */}
+        <Box p={4} borderTop="1px" borderColor="whiteAlpha.100" bg="rgba(26, 32, 44, 0.4)" backdropFilter="blur(10px)" position="relative">
           <HStack spacing={3} justify="space-between">
             <HStack spacing={3}>
               <Avatar size="sm" name="User" bg={accentColor} />
@@ -474,6 +743,7 @@ const DashboardLayout = () => {
               as={FaCog}
               color="white"
               cursor="pointer"
+              onClick={() => navigate("/dashboard/settings/user")}
               _hover={{
                 color: accentColor,
                 transform: "rotate(180deg)",
